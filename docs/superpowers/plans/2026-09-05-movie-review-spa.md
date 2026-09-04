@@ -23,6 +23,10 @@
 - 조회 화면의 상태 분기는 항상 `loading → error → 빈 상태 → 콘텐츠` 순서를 지킨다.
 - 테스트는 로직이 있는 곳(검증, 파생 계산, 훅)에만 쓴다. 순수 표현 컴포넌트는 렌더 스모크 테스트까지만.
 - 미디어 구분 값은 `'영화'`, `'드라마'` 두 개로 고정.
+- **`beforeEach`/`afterEach`는 반드시 블록 본문으로 쓴다.** `beforeEach(() => fn.mockReset())`처럼
+  간결 본문으로 쓰면 `mockReset()`이 반환하는 목 함수가 훅의 반환값이 되고, Vitest는 훅이
+  반환한 함수를 teardown으로 간주해 테스트 후 호출한다. 목이 한 번 더 호출되면서
+  처리되지 않은 rejection이 발생해 엉뚱한 테스트가 실패한다.
 
 ---
 
@@ -1221,7 +1225,9 @@ vi.mock('../lib/reviewsApi', () => ({ fetchReviews: (...a) => fetchReviews(...a)
 
 const { useReviews } = await import('./useReviews')
 
-beforeEach(() => fetchReviews.mockReset())
+beforeEach(() => {
+  fetchReviews.mockReset()
+})
 
 test('성공하면 목록과 loading=false를 준다', async () => {
   fetchReviews.mockResolvedValue([{ id: '1', title: '인터스텔라' }])
@@ -1391,7 +1397,9 @@ const renderPage = () =>
     </MemoryRouter>
   )
 
-beforeEach(() => useReviews.mockReset())
+beforeEach(() => {
+  useReviews.mockReset()
+})
 
 test('로딩 중이면 로딩을 보여준다', () => {
   useReviews.mockReturnValue({ reviews: [], loading: true, error: null, refetch: vi.fn() })
@@ -1560,7 +1568,9 @@ vi.mock('../lib/reviewsApi', () => ({
 
 const { useReviewDetail } = await import('./useReviewDetail')
 
-beforeEach(() => fetchReviewById.mockReset())
+beforeEach(() => {
+  fetchReviewById.mockReset()
+})
 
 test('id로 단건을 불러온다', async () => {
   fetchReviewById.mockResolvedValue({ id: '1', title: '인터스텔라' })
