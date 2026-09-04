@@ -30,6 +30,13 @@ npm run dev
 두 값은 Supabase 대시보드의 Project Settings → API에서 확인한다.
 값이 없으면 앱은 흰 화면 대신 "Supabase 환경변수가 없습니다" 안내를 화면에 표시한다.
 
+주의할 점 두 가지:
+
+- `VITE_SUPABASE_URL`은 **브라우저 주소창의 대시보드 URL이 아니다.**
+  `https://supabase.com/dashboard/project/<ref>`가 아니라 `https://<ref>.supabase.co` 형태여야 한다.
+- 키는 계정에 따라 `anon public`(`eyJ...`) 또는 새 형식인 `publishable`(`sb_publishable_...`)로
+  표시된다. 둘 다 동작한다. `service_role`(`secret`) 키는 RLS를 무시하므로 절대 쓰지 않는다.
+
 ## Supabase 테이블
 
 SQL Editor에서 아래를 실행한다.
