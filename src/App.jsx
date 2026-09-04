@@ -7,6 +7,7 @@ import NotFoundPage from './pages/NotFoundPage'
 import ReviewListPage from './pages/ReviewListPage'
 import ReviewDetailPage from './pages/ReviewDetailPage'
 import ReviewNewPage from './pages/ReviewNewPage'
+import ReviewEditPage from './pages/ReviewEditPage'
 
 export default function App() {
   return (
@@ -16,6 +17,7 @@ export default function App() {
         <Route path="reviews" element={<ReviewListPage />} />
         <Route path="reviews/new" element={<ReviewNewPage />} />
         <Route path="reviews/:id" element={<ReviewDetailPage />} />
+        <Route path="reviews/:id/edit" element={<ReviewEditPage />} />
         <Route path="login" element={<LoginPage />} />
         <Route path="profile" element={<ProfilePage />} />
         <Route path="*" element={<NotFoundPage />} />
