@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { useReviews } from '../hooks/useReviews'
+import { useAuth } from '../contexts/AuthContext'
 import Loading from '../components/Loading'
 import ErrorState from '../components/ErrorState'
 import EmptyState from '../components/EmptyState'
@@ -17,12 +18,19 @@ function StatCard({ label, value }) {
 
 export default function ProfilePage() {
   const { reviews, loading, error, refetch } = useReviews()
+  const { user } = useAuth()
+
+  // 목록 전체가 아니라 내가 쓴 것만 집계한다.
+  const mine = useMemo(
+    () => reviews.filter((review) => review.user_id === user?.id),
+    [reviews, user?.id]
+  )
 
   const stats = useMemo(() => {
-    if (reviews.length === 0) return null
-    const total = reviews.length
-    const sum = reviews.reduce((acc, review) => acc + review.rating, 0)
-    const movies = reviews.filter((review) => review.media_type === '영화').length
+    if (mine.length === 0) return null
+    const total = mine.length
+    const sum = mine.reduce((acc, review) => acc + review.rating, 0)
+    const movies = mine.filter((review) => review.media_type === '영화').length
 
     return {
       total,
@@ -30,14 +38,17 @@ export default function ProfilePage() {
       movies,
       dramas: total - movies,
     }
-  }, [reviews])
+  }, [mine])
 
   if (loading) return <Loading />
   if (error) return <ErrorState message={error} onRetry={refetch} />
 
   return (
     <section className="flex flex-col gap-6">
-      <h1 className="text-2xl font-bold text-slate-900">내 기록</h1>
+      <div>
+        <h1 className="text-2xl font-bold text-slate-900">내 기록</h1>
+        <p className="mt-1 text-sm text-slate-500">{user?.email}</p>
+      </div>
       {stats ? (
         <div className="grid gap-3 sm:grid-cols-4">
           <StatCard label="총 리뷰" value={`${stats.total}개`} />
@@ -46,7 +57,7 @@ export default function ProfilePage() {
           <StatCard label="드라마" value={`${stats.dramas}개`} />
         </div>
       ) : (
-        <EmptyState message="아직 기록이 없습니다." />
+        <EmptyState message="아직 작성한 리뷰가 없습니다." />
       )}
     </section>
   )

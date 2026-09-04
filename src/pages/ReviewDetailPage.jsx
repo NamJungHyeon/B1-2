@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useReviewDetail } from '../hooks/useReviewDetail'
 import { deleteReview } from '../lib/reviewsApi'
+import { useAuth } from '../contexts/AuthContext'
 import Badge from '../components/Badge'
 import RatingStars from '../components/RatingStars'
 import Button from '../components/Button'
@@ -14,6 +15,7 @@ export default function ReviewDetailPage() {
   const { id } = useParams()
   const navigate = useNavigate()
   const { review, loading, error, refetch } = useReviewDetail(id)
+  const { user } = useAuth()
 
   const location = useLocation()
   const [toast, setToast] = useState(location.state?.toast ?? null)
@@ -48,6 +50,8 @@ export default function ReviewDetailPage() {
   if (error) return <ErrorState message={error} onRetry={refetch} />
   if (!review) return <ErrorState message="리뷰를 찾을 수 없습니다." />
 
+  const isOwner = Boolean(user && review.user_id && user.id === review.user_id)
+
   return (
     <article className="flex flex-col gap-6">
       {deleteError && (
@@ -79,15 +83,20 @@ export default function ReviewDetailPage() {
       <p className="whitespace-pre-wrap text-slate-700">{review.content}</p>
 
       <div className="flex gap-2">
-        <Link
-          to={`/reviews/${review.id}/edit`}
-          className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-        >
-          수정
-        </Link>
-        <Button variant="danger" onClick={() => setConfirmOpen(true)}>
-          삭제
-        </Button>
+        {/* 내가 쓴 리뷰일 때만 노출한다. 서버에서도 RLS가 한 번 더 막는다. */}
+        {isOwner && (
+          <>
+            <Link
+              to={`/reviews/${review.id}/edit`}
+              className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+            >
+              수정
+            </Link>
+            <Button variant="danger" onClick={() => setConfirmOpen(true)}>
+              삭제
+            </Button>
+          </>
+        )}
         <Link
           to="/reviews"
           className="ml-auto self-center text-sm text-slate-500 hover:underline"
