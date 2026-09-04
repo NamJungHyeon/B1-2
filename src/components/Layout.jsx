@@ -1,14 +1,22 @@
-import { NavLink, Outlet } from 'react-router-dom'
+import { NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { useAuth } from '../contexts/AuthContext'
 
 const NAV = [
   { to: '/', label: '홈', end: true },
   { to: '/reviews', label: '리뷰 목록' },
   { to: '/reviews/new', label: '리뷰 쓰기' },
   { to: '/profile', label: '내 기록' },
-  { to: '/login', label: '로그인' },
 ]
 
 export default function Layout() {
+  const { user, loading, logout } = useAuth()
+  const navigate = useNavigate()
+
+  const handleLogout = async () => {
+    await logout()
+    navigate('/reviews')
+  }
+
   return (
     <div className="min-h-screen bg-slate-50">
       <header className="border-b border-slate-200 bg-white">
@@ -32,6 +40,28 @@ export default function Layout() {
               </NavLink>
             ))}
           </nav>
+
+          <div className="ml-auto flex items-center gap-3 text-sm">
+            {loading ? null : user ? (
+              <>
+                <span className="text-slate-500">{user.email}</span>
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="rounded-lg border border-slate-300 px-3 py-1 text-slate-700 hover:bg-slate-50"
+                >
+                  로그아웃
+                </button>
+              </>
+            ) : (
+              <NavLink
+                to="/login"
+                className="rounded-lg bg-indigo-600 px-3 py-1 font-medium text-white hover:bg-indigo-700"
+              >
+                로그인
+              </NavLink>
+            )}
+          </div>
         </div>
       </header>
       <main className="mx-auto max-w-4xl px-4 py-8">
