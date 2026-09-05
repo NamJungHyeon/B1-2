@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useReviewDetail } from '../hooks/useReviewDetail'
 import { updateReview } from '../lib/reviewsApi'
+import { useAuth } from '../contexts/AuthContext'
 import ReviewForm from '../components/ReviewForm'
 import Loading from '../components/Loading'
 import ErrorState from '../components/ErrorState'
@@ -10,6 +11,7 @@ export default function ReviewEditPage() {
   const { id } = useParams()
   const navigate = useNavigate()
   const { review, loading, error, refetch } = useReviewDetail(id)
+  const { user } = useAuth()
 
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState(null)
@@ -32,6 +34,12 @@ export default function ReviewEditPage() {
   if (loading) return <Loading />
   if (error) return <ErrorState message={error} onRetry={refetch} />
   if (!review) return <ErrorState message="리뷰를 찾을 수 없습니다." />
+
+  // 라우트는 로그인만 검사한다. 남의 리뷰 수정 URL로 직접 들어오는 경우를 여기서 막는다.
+  // 막지 않으면 폼이 열리고, 저장을 눌러야 RLS에 걸려 개발자 문구가 뜬다.
+  if (!user || review.user_id !== user.id) {
+    return <ErrorState message="본인이 작성한 리뷰만 수정할 수 있습니다." />
+  }
 
   return (
     <section className="flex flex-col gap-6">
