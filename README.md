@@ -13,7 +13,7 @@
 ## 로컬 실행
 
 ```bash
-git clone <저장소 URL>
+git clone https://github.com/NamJungHyeon/B1-2.git
 cd <프로젝트 폴더>
 npm install
 cp .env.example .env   # 값을 채워 넣는다
