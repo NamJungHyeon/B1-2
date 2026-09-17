@@ -5,7 +5,7 @@ const getSession = vi.fn()
 const onAuthStateChange = vi.fn()
 const unsubscribe = vi.fn()
 
-vi.mock('../lib/supabaseClient', () => ({
+vi.mock('../../lib/supabaseClient', () => ({
   supabase: {
     auth: {
       getSession: (...a) => getSession(...a),
@@ -15,13 +15,13 @@ vi.mock('../lib/supabaseClient', () => ({
   isSupabaseConfigured: true,
 }))
 
-vi.mock('../lib/authApi', () => ({
+vi.mock('../../lib/authApi', () => ({
   signIn: vi.fn(),
   register: vi.fn(),
   logout: vi.fn(),
 }))
 
-const { AuthProvider, useAuth } = await import('./AuthContext')
+const { AuthProvider, useAuth } = await import('../../contexts/AuthContext')
 
 function Probe() {
   const { user, loading } = useAuth()
