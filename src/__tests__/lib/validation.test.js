@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest'
-import { validateReview } from './validation'
+import { validateReview } from '../../lib/validation'
 
 const valid = {
   title: '인터스텔라',
