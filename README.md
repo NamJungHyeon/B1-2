@@ -99,10 +99,16 @@ src/
   pages/       라우트 단위 화면
   hooks/       useReviews, useReviewDetail, usePagination
   lib/         supabaseClient, reviewsApi, authApi, storageApi, validation
+  __tests__/   테스트 전부. 위 폴더 구조를 그대로 미러링
+    setup.js
+    components/  hooks/  contexts/  lib/  pages/
 ```
 
 `lib`(통신) → `hooks`(로딩·에러·데이터 상태) → `pages`(분기 렌더링) 3층으로 나뉜다.
 페이지는 데이터 조회와 화면 조합만 하고, 표현은 전부 `components`가 맡는다.
+
+테스트는 로직과 섞이지 않도록 `__tests__/`에 모으고, 원본과 같은 하위 폴더에 둔다.
+`__tests__/hooks/useReviews.test.jsx`를 보면 `hooks/useReviews.js`를 테스트한다는 걸 바로 알 수 있다.
 
 ## 라우트
 
