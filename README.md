@@ -68,6 +68,19 @@ create policy "delete own" on reviews for delete using (auth.uid() = user_id);
 과제용으로 이메일 인증 절차를 건너뛰려면
 Authentication → Sign In / Providers → Email에서 **Confirm email**을 끈다.
 
+## Supabase Storage (포스터 파일 첨부)
+
+포스터는 링크 입력과 파일 첨부 두 방식을 지원한다. 파일 첨부를 쓰려면
+Storage에서 **`posters` 버킷을 Public으로** 만들고 SQL Editor에서 정책을 추가한다.
+
+```sql
+create policy "posters read"   on storage.objects for select using (bucket_id = 'posters');
+create policy "posters upload" on storage.objects for insert to authenticated with check (bucket_id = 'posters');
+```
+
+업로드된 파일의 공개 URL이 `poster_url`에 저장되므로 DB 스키마는 두 방식이 같다.
+이미지 파일만, 2MB 이하로 제한한다.
+
 ## 명령어
 
 | 명령 | 설명 |
@@ -85,7 +98,7 @@ src/
   contexts/    AuthContext (로그인 세션 전역 상태)
   pages/       라우트 단위 화면
   hooks/       useReviews, useReviewDetail
-  lib/         supabaseClient, reviewsApi, authApi, validation
+  lib/         supabaseClient, reviewsApi, authApi, storageApi, validation
 ```
 
 `lib`(통신) → `hooks`(로딩·에러·데이터 상태) → `pages`(분기 렌더링) 3층으로 나뉜다.
@@ -95,12 +108,12 @@ src/
 
 | 경로 | 설명 |
 | --- | --- |
-| `/` | 홈 + 최근 리뷰 3개 |
+| `/` | 홈 배너 + 최근 리뷰 4개 |
 | `/reviews` | 목록 (별점 필터 + 제목 검색) |
 | `/reviews/new` | 등록 (로그인 필요) |
 | `/reviews/:id` | 상세 (수정/삭제) |
 | `/reviews/:id/edit` | 수정 (로그인 필요) |
-| `/profile` | 내가 쓴 리뷰 통계 (로그인 필요) |
+| `/profile` | 내가 쓴 리뷰 통계 + 목록 (로그인 필요) |
 | `/login` | 로그인 / 회원가입 |
 | `*` | Not Found |
 

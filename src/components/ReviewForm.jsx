@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { validateReview } from '../lib/validation'
+import { uploadPoster, validatePosterFile } from '../lib/storageApi'
 import Input from './Input'
 import Textarea from './Textarea'
 import Select from './Select'
@@ -22,6 +23,11 @@ const MEDIA_OPTIONS = [
   { value: '드라마', label: '드라마' },
 ]
 
+const POSTER_MODES = [
+  { value: 'url', label: '링크 입력' },
+  { value: 'file', label: '파일 첨부' },
+]
+
 export default function ReviewForm({
   initialValues,
   onSubmit,
@@ -29,8 +35,14 @@ export default function ReviewForm({
   submitError = null,
   submitLabel = '저장',
 }) {
-  const [values, setValues] = useState({ ...EMPTY, ...initialValues })
+  // 수정 폼에서 "바뀐 게 있는가"를 비교할 기준. 마운트 시 한 번만 계산한다.
+  const [baseline] = useState(() => ({ ...EMPTY, ...initialValues }))
+  const [values, setValues] = useState(baseline)
   const [errors, setErrors] = useState({})
+
+  const [posterMode, setPosterMode] = useState('url')
+  const [uploading, setUploading] = useState(false)
+  const [uploadError, setUploadError] = useState(null)
 
   // 해당 필드의 에러만 지운다.
   // 한 필드를 고쳤다고 다른 필드의 에러까지 사라지면 안 된다.
@@ -42,6 +54,35 @@ export default function ReviewForm({
       delete next[field]
       return next
     })
+  }
+
+  // 등록 폼(initialValues 없음)은 항상 dirty로 본다.
+  // 수정 폼은 필드 하나라도 기준값과 다를 때만 dirty다.
+  const isDirty = useMemo(() => {
+    if (!initialValues) return true
+    return Object.keys(baseline).some((key) => values[key] !== baseline[key])
+  }, [initialValues, baseline, values])
+
+  const handleFileChange = async (event) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    const problem = validatePosterFile(file)
+    if (problem) {
+      setUploadError(problem)
+      return
+    }
+
+    setUploading(true)
+    setUploadError(null)
+    try {
+      const url = await uploadPoster(file)
+      setField('poster_url')(url)
+    } catch (err) {
+      setUploadError(`업로드에 실패했습니다: ${err.message}`)
+    } finally {
+      setUploading(false)
+    }
   }
 
   const handleSubmit = (event) => {
@@ -91,13 +132,69 @@ export default function ReviewForm({
         onChange={setField('content')}
         error={errors.content}
       />
-      <Input
-        label="포스터 URL"
-        value={values.poster_url}
-        onChange={setField('poster_url')}
-        error={errors.poster_url}
-        placeholder="https://... (선택)"
-      />
+
+      {/* 포스터: 링크 입력과 파일 첨부 두 방식. 결과는 둘 다 poster_url 문자열이다. */}
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium text-slate-700">포스터</span>
+          <div className="flex rounded-lg border border-slate-300 p-0.5 text-xs">
+            {POSTER_MODES.map((mode) => (
+              <button
+                key={mode.value}
+                type="button"
+                onClick={() => {
+                  setPosterMode(mode.value)
+                  setUploadError(null)
+                }}
+                className={`rounded-md px-2 py-1 transition ${
+                  posterMode === mode.value
+                    ? 'bg-indigo-600 text-white'
+                    : 'text-slate-600 hover:bg-slate-100'
+                }`}
+              >
+                {mode.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {posterMode === 'url' ? (
+          <Input
+            label="포스터 URL"
+            value={values.poster_url}
+            onChange={setField('poster_url')}
+            error={errors.poster_url}
+            placeholder="https://... (선택)"
+          />
+        ) : (
+          <div className="flex flex-col gap-1">
+            <label htmlFor="poster-file" className="text-sm font-medium text-slate-700">
+              포스터 파일
+            </label>
+            <input
+              id="poster-file"
+              type="file"
+              accept="image/*"
+              onChange={handleFileChange}
+              disabled={uploading}
+              className="text-sm text-slate-600 file:mr-3 file:rounded-lg file:border-0 file:bg-slate-100 file:px-3 file:py-1.5 file:text-sm file:text-slate-700 hover:file:bg-slate-200"
+            />
+            <p className="text-xs text-slate-500">
+              {uploading ? '업로드 중...' : '이미지 파일, 2MB 이하'}
+            </p>
+            {uploadError && <p className="text-xs text-red-600">{uploadError}</p>}
+          </div>
+        )}
+
+        {values.poster_url && (
+          <img
+            src={values.poster_url}
+            alt="포스터 미리보기"
+            className="h-40 w-28 rounded-lg border border-slate-200 object-cover"
+          />
+        )}
+      </div>
+
       <Input
         label="본 날짜"
         type="date"
@@ -117,7 +214,7 @@ export default function ReviewForm({
         </div>
       </div>
 
-      <Button type="submit" loading={submitting}>
+      <Button type="submit" loading={submitting} disabled={!isDirty || uploading}>
         {submitLabel}
       </Button>
     </form>
