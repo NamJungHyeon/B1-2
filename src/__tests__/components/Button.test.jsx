@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { test, expect, vi } from 'vitest'
-import Button from './Button'
+import Button from '../../components/Button'
 
 test('loading이면 비활성화되고 로딩 문구를 보여준다', () => {
   render(<Button loading>저장</Button>)

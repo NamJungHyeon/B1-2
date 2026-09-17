@@ -3,12 +3,12 @@ import userEvent from '@testing-library/user-event'
 import { test, expect, vi, beforeEach } from 'vitest'
 
 const uploadPoster = vi.fn()
-vi.mock('../lib/storageApi', async () => {
-  const actual = await vi.importActual('../lib/storageApi')
+vi.mock('../../lib/storageApi', async () => {
+  const actual = await vi.importActual('../../lib/storageApi')
   return { ...actual, uploadPoster: (...a) => uploadPoster(...a) }
 })
 
-const { default: ReviewForm } = await import('./ReviewForm')
+const { default: ReviewForm } = await import('../../components/ReviewForm')
 
 beforeEach(() => {
   uploadPoster.mockReset()

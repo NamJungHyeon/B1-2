@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { test, expect, vi } from 'vitest'
-import Pagination from './Pagination'
+import Pagination from '../../components/Pagination'
 
 test('페이지가 1개뿐이면 아무것도 그리지 않는다', () => {
   const { container } = render(<Pagination page={1} totalPages={1} onChange={vi.fn()} />)
