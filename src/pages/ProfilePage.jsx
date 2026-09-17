@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { useReviews } from '../hooks/useReviews'
 import { useAuth } from '../contexts/AuthContext'
+import ReviewList from '../components/ReviewList'
 import Loading from '../components/Loading'
 import ErrorState from '../components/ErrorState'
 import EmptyState from '../components/EmptyState'
@@ -50,12 +51,19 @@ export default function ProfilePage() {
         <p className="mt-1 text-sm text-slate-500">{user?.email}</p>
       </div>
       {stats ? (
-        <div className="grid gap-3 sm:grid-cols-4">
-          <StatCard label="총 리뷰" value={`${stats.total}개`} />
-          <StatCard label="평균 별점" value={stats.average} />
-          <StatCard label="영화" value={`${stats.movies}개`} />
-          <StatCard label="드라마" value={`${stats.dramas}개`} />
-        </div>
+        <>
+          <div className="grid gap-3 sm:grid-cols-4">
+            <StatCard label="총 리뷰" value={`${stats.total}개`} />
+            <StatCard label="평균 별점" value={stats.average} />
+            <StatCard label="영화" value={`${stats.movies}개`} />
+            <StatCard label="드라마" value={`${stats.dramas}개`} />
+          </div>
+
+          <section className="flex flex-col gap-3">
+            <h2 className="text-lg font-semibold text-slate-900">내가 쓴 리뷰</h2>
+            <ReviewList reviews={mine} />
+          </section>
+        </>
       ) : (
         <EmptyState message="아직 작성한 리뷰가 없습니다." />
       )}
