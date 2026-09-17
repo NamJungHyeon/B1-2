@@ -8,12 +8,12 @@ const mockFrom = vi.fn(() => ({
   }),
 }))
 
-vi.mock('./supabaseClient', () => ({
+vi.mock('../../lib/supabaseClient', () => ({
   supabase: { from: (...args) => mockFrom(...args) },
   isSupabaseConfigured: true,
 }))
 
-const { fetchReviews } = await import('./reviewsApi')
+const { fetchReviews } = await import('../../lib/reviewsApi')
 
 test('네트워크 오류는 개발자 문구 대신 읽을 수 있는 한국어 메시지가 된다', async () => {
   await expect(fetchReviews()).rejects.toThrow('서버에 연결하지 못했습니다')

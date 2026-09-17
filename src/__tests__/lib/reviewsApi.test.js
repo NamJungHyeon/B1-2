@@ -1,12 +1,12 @@
 import { vi, describe, test, expect, beforeEach } from 'vitest'
 
 const mockFrom = vi.fn()
-vi.mock('./supabaseClient', () => ({
+vi.mock('../../lib/supabaseClient', () => ({
   supabase: { from: (...args) => mockFrom(...args) },
 }))
 
 const { fetchReviews, fetchReviewById, createReview, deleteReview } =
-  await import('./reviewsApi')
+  await import('../../lib/reviewsApi')
 
 beforeEach(() => {
   mockFrom.mockReset()

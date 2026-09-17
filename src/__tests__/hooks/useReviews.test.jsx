@@ -2,9 +2,9 @@ import { renderHook, waitFor } from '@testing-library/react'
 import { vi, test, expect, beforeEach } from 'vitest'
 
 const fetchReviews = vi.fn()
-vi.mock('../lib/reviewsApi', () => ({ fetchReviews: (...a) => fetchReviews(...a) }))
+vi.mock('../../lib/reviewsApi', () => ({ fetchReviews: (...a) => fetchReviews(...a) }))
 
-const { useReviews } = await import('./useReviews')
+const { useReviews } = await import('../../hooks/useReviews')
 
 // 블록 본문으로 쓴다. `() => fetchReviews.mockReset()`처럼 간결 본문으로 쓰면
 // mockReset()이 반환하는 목 함수가 beforeEach의 반환값이 되고,

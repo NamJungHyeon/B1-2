@@ -4,7 +4,7 @@ const upload = vi.fn()
 const getPublicUrl = vi.fn()
 const getUser = vi.fn()
 
-vi.mock('./supabaseClient', () => ({
+vi.mock('../../lib/supabaseClient', () => ({
   supabase: {
     auth: { getUser: (...a) => getUser(...a) },
     storage: {
@@ -17,7 +17,7 @@ vi.mock('./supabaseClient', () => ({
   isSupabaseConfigured: true,
 }))
 
-const { uploadPoster, validatePosterFile } = await import('./storageApi')
+const { uploadPoster, validatePosterFile } = await import('../../lib/storageApi')
 
 beforeEach(() => {
   upload.mockReset()

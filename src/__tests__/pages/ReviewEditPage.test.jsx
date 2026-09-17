@@ -5,13 +5,13 @@ import { vi, test, expect, beforeEach } from 'vitest'
 const useReviewDetail = vi.fn()
 const useAuth = vi.fn()
 
-vi.mock('../hooks/useReviewDetail', () => ({
+vi.mock('../../hooks/useReviewDetail', () => ({
   useReviewDetail: () => useReviewDetail(),
 }))
-vi.mock('../contexts/AuthContext', () => ({ useAuth: () => useAuth() }))
-vi.mock('../lib/reviewsApi', () => ({ updateReview: vi.fn() }))
+vi.mock('../../contexts/AuthContext', () => ({ useAuth: () => useAuth() }))
+vi.mock('../../lib/reviewsApi', () => ({ updateReview: vi.fn() }))
 
-const { default: ReviewEditPage } = await import('./ReviewEditPage')
+const { default: ReviewEditPage } = await import('../../pages/ReviewEditPage')
 
 const renderPage = () =>
   render(

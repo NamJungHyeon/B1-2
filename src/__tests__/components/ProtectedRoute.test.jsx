@@ -3,9 +3,9 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { vi, test, expect, beforeEach } from 'vitest'
 
 const useAuth = vi.fn()
-vi.mock('../contexts/AuthContext', () => ({ useAuth: () => useAuth() }))
+vi.mock('../../contexts/AuthContext', () => ({ useAuth: () => useAuth() }))
 
-const { default: ProtectedRoute } = await import('./ProtectedRoute')
+const { default: ProtectedRoute } = await import('../../components/ProtectedRoute')
 
 const renderAt = (path = '/secret') =>
   render(

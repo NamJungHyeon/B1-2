@@ -4,7 +4,7 @@ const signInWithPassword = vi.fn()
 const signUp = vi.fn()
 const signOut = vi.fn()
 
-vi.mock('./supabaseClient', () => ({
+vi.mock('../../lib/supabaseClient', () => ({
   supabase: {
     auth: {
       signInWithPassword: (...a) => signInWithPassword(...a),
@@ -15,7 +15,7 @@ vi.mock('./supabaseClient', () => ({
   isSupabaseConfigured: true,
 }))
 
-const { signIn, register, logout } = await import('./authApi')
+const { signIn, register, logout } = await import('../../lib/authApi')
 
 beforeEach(() => {
   signInWithPassword.mockReset()
