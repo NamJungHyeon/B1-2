@@ -5,10 +5,10 @@ import { vi, test, expect, beforeEach } from 'vitest'
 
 const useReviews = vi.fn()
 const useAuth = vi.fn()
-vi.mock('../hooks/useReviews', () => ({ useReviews: () => useReviews() }))
-vi.mock('../contexts/AuthContext', () => ({ useAuth: () => useAuth() }))
+vi.mock('../../hooks/useReviews', () => ({ useReviews: () => useReviews() }))
+vi.mock('../../contexts/AuthContext', () => ({ useAuth: () => useAuth() }))
 
-const { default: ProfilePage } = await import('./ProfilePage')
+const { default: ProfilePage } = await import('../../pages/ProfilePage')
 
 const mine = (n) =>
   Array.from({ length: n }, (_, i) => ({
