@@ -1,7 +1,7 @@
 import { renderHook, act } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { test, expect } from 'vitest'
-import { usePagination } from './usePagination'
+import { usePagination } from '../../hooks/usePagination'
 
 const items = Array.from({ length: 25 }, (_, i) => i + 1)
 

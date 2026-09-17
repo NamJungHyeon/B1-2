@@ -2,11 +2,11 @@ import { renderHook, waitFor } from '@testing-library/react'
 import { vi, test, expect, beforeEach } from 'vitest'
 
 const fetchReviewById = vi.fn()
-vi.mock('../lib/reviewsApi', () => ({
+vi.mock('../../lib/reviewsApi', () => ({
   fetchReviewById: (...a) => fetchReviewById(...a),
 }))
 
-const { useReviewDetail } = await import('./useReviewDetail')
+const { useReviewDetail } = await import('../../hooks/useReviewDetail')
 
 beforeEach(() => {
   fetchReviewById.mockReset()
