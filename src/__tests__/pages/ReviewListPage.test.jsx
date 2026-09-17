@@ -4,9 +4,9 @@ import { MemoryRouter } from 'react-router-dom'
 import { vi, test, expect, beforeEach } from 'vitest'
 
 const useReviews = vi.fn()
-vi.mock('../hooks/useReviews', () => ({ useReviews: () => useReviews() }))
+vi.mock('../../hooks/useReviews', () => ({ useReviews: () => useReviews() }))
 
-const { default: ReviewListPage } = await import('./ReviewListPage')
+const { default: ReviewListPage } = await import('../../pages/ReviewListPage')
 
 const renderPage = () =>
   render(
