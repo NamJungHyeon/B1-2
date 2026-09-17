@@ -97,7 +97,7 @@ src/
   components/  재사용 UI 컴포넌트
   contexts/    AuthContext (로그인 세션 전역 상태)
   pages/       라우트 단위 화면
-  hooks/       useReviews, useReviewDetail
+  hooks/       useReviews, useReviewDetail, usePagination
   lib/         supabaseClient, reviewsApi, authApi, storageApi, validation
 ```
 
@@ -113,7 +113,7 @@ src/
 | `/reviews/new` | 등록 (로그인 필요) |
 | `/reviews/:id` | 상세 (수정/삭제) |
 | `/reviews/:id/edit` | 수정 (로그인 필요) |
-| `/profile` | 내가 쓴 리뷰 통계 + 목록 (로그인 필요) |
+| `/profile` | 내가 쓴 리뷰 통계 + 목록, 10개씩 페이지네이션 (로그인 필요) |
 | `/login` | 로그인 / 회원가입 |
 | `*` | Not Found |
 
