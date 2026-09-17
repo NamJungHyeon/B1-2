@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { test, expect, vi } from 'vitest'
-import RatingInput from './RatingInput'
+import RatingInput from '../../components/RatingInput'
 
 test('별을 클릭하면 해당 점수로 onChange가 호출된다', async () => {
   const onChange = vi.fn()
