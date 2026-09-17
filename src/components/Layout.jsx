@@ -4,7 +4,6 @@ import { useAuth } from '../contexts/AuthContext'
 const NAV = [
   { to: '/', label: '홈', end: true },
   { to: '/reviews', label: '리뷰 목록' },
-  { to: '/reviews/new', label: '리뷰 쓰기' },
   { to: '/profile', label: '내 기록' },
 ]
 
@@ -42,13 +41,22 @@ export default function Layout() {
           </nav>
 
           <div className="ml-auto flex items-center gap-3 text-sm">
+            {/* 주요 행동이라 텍스트 링크가 아닌 버튼으로 항상 노출한다.
+                비로그인이면 보호 라우트가 로그인 화면으로 보낸다. */}
+            <NavLink
+              to="/reviews/new"
+              className="rounded-lg bg-indigo-600 px-3 py-1.5 font-medium text-white hover:bg-indigo-700"
+            >
+              + 리뷰 쓰기
+            </NavLink>
+
             {loading ? null : user ? (
               <>
-                <span className="text-slate-500">{user.email}</span>
+                <span className="hidden text-slate-500 sm:inline">{user.email}</span>
                 <button
                   type="button"
                   onClick={handleLogout}
-                  className="rounded-lg border border-slate-300 px-3 py-1 text-slate-700 hover:bg-slate-50"
+                  className="rounded-lg border border-slate-300 px-3 py-1.5 text-slate-700 hover:bg-slate-50"
                 >
                   로그아웃
                 </button>
@@ -56,7 +64,7 @@ export default function Layout() {
             ) : (
               <NavLink
                 to="/login"
-                className="rounded-lg bg-indigo-600 px-3 py-1 font-medium text-white hover:bg-indigo-700"
+                className="rounded-lg border border-slate-300 px-3 py-1.5 text-slate-700 hover:bg-slate-50"
               >
                 로그인
               </NavLink>
