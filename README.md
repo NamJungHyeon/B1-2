@@ -13,6 +13,17 @@
 
 ## 목차
 
+### 동료 평가 보완 항목 바로가기
+
+| 평가 항목 | README에서 확인할 근거 |
+| --- | --- |
+| #5 배포 URL·환경변수 | 상단 배포 URL, [환경변수](#환경변수), [배포](#배포) |
+| #7 폴더 분리 이유·파일 배치 기준 | [폴더 구조와 책임](#폴더-구조와-책임) |
+| #10 props와 state·상향/하향 흐름 | [평가 답변: props와 state의 위치](#평가-답변-props와-state의-위치) |
+| #15 Supabase 선택 이유·인증·연동 경험 | [왜 Supabase인가](#왜-supabase인가), [인증과 RLS](#인증과-rls), [개발하며 겪은 문제](#개발하며-겪은-문제) |
+
+위 번호는 전달받은 평가 결과 기준이다. 아래 설명은 이 저장소의 실제 구현을 기준으로 한다.
+
 1. [기술 스택](#기술-스택)
 2. [왜 Supabase인가](#왜-supabase인가)
 3. [빠른 시작](#빠른-시작)
@@ -46,12 +57,14 @@
 
 과제는 Supabase 또는 Firebase 중 하나를 요구했다. Supabase를 고른 이유:
 
-1. **관계형 스키마가 명시적이다.** `reviews` 테이블의 컬럼과 제약(`rating between 1 and 5`, `media_type in ('영화','드라마')`)을 SQL로 선언하면 잘못된 데이터가 애초에 들어오지 않는다. Firestore는 스키마리스라 이 검증을 클라이언트가 전부 떠안는다.
-2. **SDK 호출이 REST 패턴이라 `useEffect`와 잘 맞는다.** `supabase.from('reviews').select()`는 프로미스 하나를 돌려주므로 "마운트 시 한 번 요청 → 응답을 state에 저장"이라는 React의 기본 비동기 패턴을 그대로 쓸 수 있다. Firestore의 실시간 리스너는 편하지만 `useEffect`의 정리 함수까지 신경 써야 해서 학습 초점이 흐려진다.
+1. **관계형 스키마가 명시적이다.** `reviews` 테이블의 컬럼과 제약(`rating between 1 and 5`, `media_type in ('영화','드라마')`)을 SQL로 정의해 해당 조건에 어긋나는 데이터를 DB에서 거부할 수 있다. 리뷰 필드와 작성자 관계를 명확히 표현하기에 적합했다.
+2. **요청·응답 흐름을 React에서 직접 다룰 수 있다.** `supabase.from('reviews').select()`를 `await`하고 결과를 state에 저장하면서 로딩·성공·실패를 구현했다. 별도 백엔드 서버를 구축하지 않고 React 학습에 집중할 수 있었다.
 3. **RLS(Row Level Security)로 권한을 DB에서 강제한다.** "본인 글만 수정·삭제"를 화면에서 버튼을 숨기는 것으로 끝내지 않고, 서버가 `auth.uid() = user_id`를 검사한다. 화면 우회 시도가 실제로 막히는지 검증할 수 있었다.
 4. **Auth와 Storage가 같은 프로젝트에 있다.** 로그인과 포스터 업로드를 추가할 때 별도 서비스를 붙이지 않았다.
 
 연동하면서 겪은 주의점은 [개발하며 겪은 문제](#개발하며-겪은-문제)에 정리했다.
+
+**인증은 구현되어 있다.** Supabase Auth의 이메일·비밀번호 회원가입, 로그인, 로그아웃을 사용한다. `AuthContext`가 세션을 공유하고 `ProtectedRoute`가 등록·수정·내 기록 경로를 보호한다. 읽기는 공개하며, 쓰기 권한은 리뷰의 `user_id`와 로그인 사용자 ID를 비교하는 RLS 정책으로 제한한다.
 
 ## 빠른 시작
 
@@ -151,13 +164,54 @@ src/
 
 | 폴더 | 책임 | 하지 않는 것 | 대표 파일 |
 | --- | --- | --- | --- |
-| `pages/` | 라우트 하나에 대응. 훅으로 데이터를 받아 어떤 컴포넌트를 그릴지 **분기**한다 | Supabase를 직접 호출하지 않음. 마크업을 길게 쓰지 않음 | `ReviewListPage.jsx`, `ReviewDetailPage.jsx` |
-| `components/` | prop을 받아 **표현**한다. 어느 페이지에서든 쓸 수 있어야 한다 | 데이터를 스스로 가져오지 않음 (`Layout`, `ProtectedRoute` 예외) | `ReviewForm.jsx`, `ErrorState.jsx` |
+| `pages/` | 라우트별 화면 조합, 조회 상태 분기, 저장·삭제와 이동 | SDK 쿼리는 `lib`에 두고 훅 또는 API 함수를 호출 | `ReviewListPage.jsx`, `ReviewDetailPage.jsx` |
+| `components/` | props로 표현·동작을 바꾸고 필요한 UI 지역 상태 관리 | 공통 데이터 조회는 페이지·훅에 둠. `ReviewForm`의 파일 업로드와 인증 소비 컴포넌트는 예외 | `ReviewForm.jsx`, `ErrorState.jsx` |
 | `hooks/` | 비동기 요청과 그에 딸린 `loading / error / data` **상태**를 캡슐화한다 | JSX를 반환하지 않음 | `useReviews.js`, `usePagination.js` |
 | `contexts/` | 여러 화면이 동시에 필요로 하는 **전역** 상태 | 페이지 하나에서만 쓰는 상태는 두지 않음 | `AuthContext.jsx` |
 | `lib/` | Supabase 클라이언트, CRUD 함수, 검증. React를 모른다 | `useState`나 JSX를 쓰지 않음 | `reviewsApi.js`, `validation.js` |
 
-핵심 규칙: **`lib`(통신) → `hooks`(상태) → `pages`(분기) → `components`(표현)** 순으로만 의존한다. 역방향 의존은 없다.
+**분리 이유:** 통신 조건, 비동기 상태, 화면 표현을 각각 수정할 수 있도록 책임을 나눴다. 조회는 페이지 → 훅 → API 함수 순서로 호출하고 결과를 UI에 전달한다. 등록·수정·삭제는 페이지의 이벤트 처리 함수가 API 함수를 직접 호출한다. `ReviewForm`은 파일 업로드를 위해 `storageApi`도 사용하므로 모든 기능이 하나의 고정된 계층만 거치는 것은 아니다.
+
+**새 파일을 둘 기준:** URL별 화면과 성공 후 이동은 `pages`, props로 재사용하는 입력·표시 UI는 `components`, React 상태와 Effect를 포함한 공통 로직은 `hooks`, React 없이 호출할 통신·검증 함수는 `lib`에 둔다. 여러 화면이 함께 소비하는 로그인 상태는 `contexts`에 둔다. 한 페이지에서만 사용하는 작은 `HeroBanner`나 `StatCard`는 해당 페이지 파일에 함께 둔다.
+
+### 평가 답변: props와 state의 위치
+
+**state**는 컴포넌트가 소유하며 setter로 변경하는 값이고, **props**는 부모가 자식에게 전달하는 값과 함수다. 자식은 props를 직접 수정하지 않고 전달받은 콜백으로 변경을 요청한다. 상태는 그 값을 함께 사용하는 컴포넌트들의 가장 가까운 공통 부모에 둔다.
+
+| 범위 | 실제 상태와 소유자 | 이 위치를 선택한 이유 |
+| --- | --- | --- |
+| 폼 로컬 | `ReviewForm`의 `values`, `errors`, `uploading` | 입력과 검증에 필요한 값이며, 부모는 제출된 결과만 필요하다. |
+| 페이지로 상향 | `ReviewListPage`의 `keyword`, `rating` | 필터 입력 UI와 리뷰 목록이 같은 조건을 사용하므로 공통 부모가 소유한다. |
+| 페이지 로컬 | 등록·수정 페이지의 `submitting`, `submitError` | 페이지가 저장 요청과 성공 후 이동을 담당하고, 폼은 props로 진행·실패를 표시한다. |
+| 앱 전역 | `AuthContext`의 `user`, `loading` | 헤더, 보호 라우트, 리뷰 소유권 검사, 내 기록에서 함께 사용한다. |
+
+**실제 상향·하향 흐름 1 — 검색**
+
+```text
+ReviewListPage: keyword state 소유
+  → keyword와 onKeywordChange를 props로 전달 (하향)
+ReviewFilterBar → Input: 사용자가 입력
+  → 전달받은 콜백 호출 (상향 이벤트 전달)
+ReviewListPage: handleKeywordChange → setKeyword → resetPage
+  → filtered 재계산 → ReviewList에 결과 전달 (하향)
+```
+
+**실제 상향·하향 흐름 2 — 등록·수정 폼**
+
+```text
+페이지 → ReviewForm: initialValues, submitting, submitError, onSubmit 전달
+ReviewForm: useState(baseline)으로 입력 state 생성
+  → setField가 values를 변경 → 입력창과 미리보기 갱신
+  → 검증 통과 후 onSubmit(values)로 부모에 결과 전달
+페이지: 저장 요청, submitting·submitError 변경
+  → 새 props가 폼으로 내려가 버튼과 오류 안내 갱신
+```
+
+`setField`는 함수 선언문이 아니라 `const setField = (field) => (value) => ...` 형태의 함수다. `initialValues`는 폼이 마운트될 때 초기 상태로 사용한다. 수정 페이지는 데이터를 불러온 뒤 폼을 렌더링한다.
+
+**전역으로 올리는 기준:** 현재 제목 입력값은 폼 하나에서만 사용하므로 Context로 올리지 않았다. 로그인 사용자는 여러 경로에서 필요하므로 전역으로 관리한다. 향후 별도 형제 컴포넌트가 입력 중인 제목을 함께 사용한다면 우선 공통 부모로 입력 상태를 올리고, 앱 전역 공유가 실제로 필요할 때 Context를 검토한다.
+
+코드 근거: [ReviewForm](src/components/ReviewForm.jsx), [ReviewListPage](src/pages/ReviewListPage.jsx), [ReviewFilterBar](src/components/ReviewFilterBar.jsx), [ReviewNewPage](src/pages/ReviewNewPage.jsx), [AuthContext](src/contexts/AuthContext.jsx).
 
 ### 데이터 흐름
 
@@ -536,6 +590,20 @@ Vitest + React Testing Library, 20개 파일 83개 테스트. 로직이 있는 �
 Supabase는 `vi.mock`으로 대체한다. 실제 서버를 상대로 도는 테스트는 없다.
 
 ## 배포
+
+**제출 URL:** [https://b1-2.vercel.app](https://b1-2.vercel.app)
+
+**소스 코드:** [https://github.com/NamJungHyeon/B1-2](https://github.com/NamJungHyeon/B1-2)
+
+| Vercel 설정 | 입력값 |
+| --- | --- |
+| Framework Preset | Vite |
+| Build Command | `npm run build` |
+| Output Directory | `dist` |
+| `VITE_SUPABASE_URL` | 사용하는 프로젝트의 `https://<project-ref>.supabase.co` 주소 |
+| `VITE_SUPABASE_ANON_KEY` | 같은 프로젝트의 publishable 또는 anon public 키 |
+
+환경변수는 Vercel 프로젝트의 Settings → Environment Variables에서 배포 대상 환경(제출본은 Production)에 등록한다. Preview에서도 시험하려면 Preview 환경에도 등록한다. 실제 값은 설정 화면에 입력하고, 저장소에는 값이 비어 있는 형식 예시인 [.env.example](.env.example)만 공유한다. 관리자용 secret·service_role 키는 등록하지 않는다. `VITE_` 값은 브라우저 번들에 포함되므로 공개 클라이언트용 키만 사용하고 데이터 권한은 RLS로 제한한다.
 
 Vercel에서 GitHub 저장소를 Import → **Environment Variables에 `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` 등록** → Deploy.
 
